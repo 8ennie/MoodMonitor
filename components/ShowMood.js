@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { View, Text, Button, StyleSheet, Image, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native'
 import Mood from '../models/Mood';
+import Location from '../models/Location';
+import Weather from '../models/Weather';
 
 
 const Realm = require('realm');
@@ -13,6 +15,8 @@ class ShowMood extends Component {
         moods: [],
         expandedMood: false,
         note: "",
+        location: {},
+        weather: {},
     }
 
     changeLayout = () => {
@@ -23,14 +27,20 @@ class ShowMood extends Component {
 
     constructor(props) {
         super(props);
-        let realm = new Realm({ schema: [Mood] });
+        let realm = new Realm({ schema: [Mood, Location, Weather] });
         let mood = realm.objectForPrimaryKey('Mood', props.route.params.moodId);
         this.state = {
             date: mood.date,
             mainMood: mood.mainMood,
             moods: mood.moods.map(m => m),
             note: mood.note,
+            location: mood.location,
+            weather: mood.weather
         };
+        console.log(mood);
+        
+        console.log(this.state);
+        
         if (Platform.OS === 'android') {
             UIManager.setLayoutAnimationEnabledExperimental(true);
         }
@@ -42,7 +52,30 @@ class ShowMood extends Component {
             })
         }
     }
+    changeLocationLayout = () => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        this.setState({ expandedLocation: !this.state.expandedLocation });
+    }
 
+    location() {
+        if (this.state.location) {
+            return (
+                <View>
+                    <TouchableOpacity activeOpacity={0.8} onPress={this.changeLocationLayout} style={styles.catagoryHeader}>
+                        <Text style={styles.heading}>Location</Text>
+                        <Image style={styles.imgExpand}
+                            source={this.state.expandedLocation ? require('../resources/images/expand_less_18dp.png') : require('../resources/images/expand_more_18dp.png')}
+                        />
+                    </TouchableOpacity>
+                    <View style={{ height: this.state.expandedLocation ? null : 0, overflow: 'hidden' }}>
+                        <Text>{this.state.location.city}</Text>
+                        <Text>{this.state.location.country}</Text>
+                    </View>
+                </View>
+            );
+        }
+
+    }
 
     onPressMood(mood) {
         if (this.state.edit) {
@@ -157,7 +190,7 @@ class ShowMood extends Component {
         if(this.state.moods.length != 0){
             return (
                 <View>
-                    <TouchableOpacity activeOpacity={0.8} onPress={this.changeLayout} style={styles.imgMoodGroup}>
+                    <TouchableOpacity activeOpacity={0.8} onPress={this.changeLayout} style={styles.catagoryHeader}>
                         <Text style={styles.heading}>In what Mood are you?</Text>
                         <Image style={styles.imgExpand}
                             source={this.state.expandedMood ? require('../resources/images/expand_less_18dp.png') : require('../resources/images/expand_more_18dp.png')}
@@ -194,7 +227,7 @@ class ShowMood extends Component {
                 <View style={styles.bottomView}>
                     <Button title="Go Back" style={styles.saveButton} onPress={() => navigation.navigate('Home')}></Button>
                 </View>
-
+                {this.location()}
             </View >
         );
     }
@@ -259,7 +292,15 @@ const styles = StyleSheet.create({
         paddingStart: 20,
         position: 'absolute', //Here is the trick
         bottom: 0, //Here is the trick
-    }
+    },
+    catagoryHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 15,
+        paddingStart: 15,
+        paddingEnd: 15
+    },
 })
 
 

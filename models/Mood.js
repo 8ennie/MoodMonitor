@@ -10,10 +10,10 @@ Mood.schema = {
         date: 'date',
         mainMood: 'int',
         moods: 'int?[]',
-        note: 'string?'
+        note: 'string?',
+        location: 'Location',
+        weather: 'Weather',
     }
 };
-
-let realm = new Realm({schema: [Mood]});
 
 export default Mood

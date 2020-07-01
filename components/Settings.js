@@ -20,10 +20,6 @@ class Settings extends Component {
                         onPress={() => this.deleteAllMoods()}
                         style={styles.menuItem}
                     >Delete all Moods</Text>
-                    <Text
-                        onPress={() => navigation.navigate('MoodHistory')}
-                        style={styles.menuItem}
-                    >Mood History</Text>
                 </View>
 
             </View>

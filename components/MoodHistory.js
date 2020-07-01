@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import { View, Text, Button, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native'
 import Mood from '../models/Mood';
+import Weather from '../models/Weather';
+import Location from '../models/Location';
 
 
 class MoodHistory extends Component {
-    realm = new Realm({ schema: [Mood] });
+    realm = new Realm({ schema: [Mood, Location, Weather] });
     constructor(props) {
         super(props);
         

@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity } from 'react-native'
 import Mood from '../models/Mood';
+import Weather from '../models/Weather';
+import Location from '../models/Location';
 
 const Realm = require('realm');
 
 class Home extends Component {
 
-    realm = new Realm({ schema: [Mood] });
+    realm = new Realm({ schema: [Mood, Location, Weather] });
     constructor(props) {
         super(props);
         this.state = {
@@ -18,7 +20,7 @@ class Home extends Component {
 
     }
 
-    componentWillUnmount(){
+    componentWillUnmount() {
         this.realm.close();
     }
     avgMoods() {
@@ -41,7 +43,9 @@ class Home extends Component {
                 oldDate = date;
             }
         });
-        avgMoods.push({ date: new Date(oldDate), avgMood: (avgMood / count) });
+        if(count != 0){
+            avgMoods.push({ date: new Date(oldDate), avgMood: (avgMood / count) });
+        }
         return avgMoods;
     }
 
@@ -71,12 +75,12 @@ class Home extends Component {
                 <View style={styles.menu}>
                     <Text
                         style={styles.header}
-                    >Old Moods</Text>
+                    >Avg Moods last days</Text>
                     <FlatList
                         style={{ height: 150 }}
                         number={2}
                         data={this.state.moods}
-                        renderItem={({ item }) => <ListItem mood={item}/>}
+                        renderItem={({ item }) => <ListItem mood={item} />}
                         keyExtractor={item => item.date.toString()}
                     />
                 </View>
@@ -89,12 +93,12 @@ class Home extends Component {
 
 
 
-function getMainMoodImage(mainMood) {
-    if (mainMood == 1) {
+function getMainMoodImage(avgMood) {  
+    if (avgMood <= 1+(2 / 3)) {
         return require('../resources/images/sad_icon.png');
-    } else if (mainMood == 2) {
+    } else if (avgMood <= 1+2 * (2 / 3)) {
         return require('../resources/images/normal_icon.png');
-    } else if (mainMood == 3) {
+    } else if (avgMood <= 3) {
         return require('../resources/images/happy_icon.png');
     }
 }
@@ -107,7 +111,7 @@ function ListItem({ mood }) {
             <Text>{mood.avgMood}</Text>
             <Image
                 style={styles.img}
-                source={getMainMoodImage(mood.mainMood)}
+                source={getMainMoodImage(mood.avgMood)}
             />
         </TouchableOpacity>
     );

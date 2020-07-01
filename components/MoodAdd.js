@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { View, Text, Button, StyleSheet, Image, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native'
 import Mood from '../models/Mood';
+import Location from '../models/Location';
+import Weather from '../models/Weather';
 
 
 const Realm = require('realm');
@@ -28,43 +30,45 @@ class MoodAdd extends Component {
         }
     }
     onPressMainMood(newMood) {
-            this.setState({
-                mainMood: newMood
-            })
-        
+        this.setState({
+            mainMood: newMood
+        })
+
     }
 
 
     onPressMood(mood) {
-            var newMoods = this.state.moods;
-            if (newMoods.includes(mood)) {
-                newMoods.splice(newMoods.indexOf(mood), 1);
-            } else {
-                newMoods.push(mood);
-            }
-            this.setState({
-                moods: newMoods
-            })
+        var newMoods = this.state.moods;
+        if (newMoods.includes(mood)) {
+            newMoods.splice(newMoods.indexOf(mood), 1);
+        } else {
+            newMoods.push(mood);
+        }
+        this.setState({
+            moods: newMoods
+        })
     }
 
     onSaveMood() {
-        let realm = new Realm({ schema: [Mood] });
+        let realm = new Realm({ schema: [Mood, Location, Weather] });
         realm.write(() => {
             realm.create('Mood', { id: realm.objects('Mood').length + 1, mainMood: this.state.mainMood, moods: this.state.moods, note: this.state.note, date: this.state.date });
         });
         realm.close();
 
         this.props.navigation.navigate('Home')
-
     }
 
+    onAddReasons() {
+        this.props.navigation.navigate('AddReason', { mood: { mainMood: this.state.mainMood , moods: this.state.moods, date: this.state.date.getTime() } })
+    }
 
     render() {
         const { date } = this.state;
         return (
             <View style={{ flex: 1 }}>
-                <Text style={[styles.heading, {fontSize:30, fontWeight:'bold'}]}>{date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear() +
-                " (" + date.getHours() + ":" + date.getMinutes() + ")"}</Text>
+                <Text style={[styles.heading, { fontSize: 30, fontWeight: 'bold' }]}>{date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear() +
+                    " (" + (date.getHours() < 10 ? "0" + date.getHours() : date.getHours()) + ":" + (date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes()) + ")"}</Text>
                 <Text style={styles.heading}>How Are You Feeling?</Text>
                 <View style={styles.imgMainMoodGroup}>
                     <TouchableOpacity onPress={() => this.onPressMainMood(1)}>
@@ -86,13 +90,9 @@ class MoodAdd extends Component {
                         />
                     </TouchableOpacity>
                 </View>
-                <TouchableOpacity activeOpacity={0.8} onPress={this.changeLayout} style={styles.imgMoodGroup}>
-                    <Text style={styles.heading}>In what Mood are you?</Text>
-                    <Image style={styles.imgExpand}
-                        source={this.state.expandedMood ? require('../resources/images/expand_less_18dp.png') : require('../resources/images/expand_more_18dp.png')}
-                    />
-                </TouchableOpacity>
-                <View style={{ height: this.state.expandedMood ? null : 0, overflow: 'hidden' }}>
+
+                <Text style={[styles.heading, { marginTop: 50, marginBottom: 5 }]}>In what Mood are you?</Text>
+                <View >
                     <View style={[styles.imgMoodGroup]}>
                         <TouchableOpacity onPress={() => this.onPressMood(1)}>
                             <Image
@@ -141,10 +141,12 @@ class MoodAdd extends Component {
                         </TouchableOpacity>
                     </View>
                 </View>
-                <View style={styles.bottomView}>
-                    <Button title="Save Your Mood" style={styles.saveButton} onPress={() => this.onSaveMood()}></Button>
+                <View style={styles.bottomView2}>
+                    <Button title="Add Reason" style={styles.navButon} onPress={() => this.onAddReasons()}></Button>
                 </View>
-
+                <View style={styles.bottomView}>
+                    <Button title="Save Your Mood" style={[styles.navButon, { padding: 50 }]} onPress={() => this.onSaveMood()}></Button>
+                </View>
             </View >
         );
     }
@@ -200,7 +202,7 @@ const styles = StyleSheet.create({
     },
     imgMoodSelected: {
         height: 50,
-        width: 50 ,
+        width: 50,
         margin: 3,
         resizeMode: 'stretch',
         borderRadius: 90,
@@ -217,14 +219,18 @@ const styles = StyleSheet.create({
         width: 25,
         resizeMode: 'stretch',
     },
-    saveButton: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        marginBottom: 36
+    bottomView2: {
+        width: '100%',
+        height: 80,
+        justifyContent: 'center',
+        paddingEnd: 20,
+        paddingStart: 20,
+        position: 'absolute', //Here is the trick
+        bottom: 30, //Here is the trick
     },
     bottomView: {
         width: '100%',
-        height: 50,
+        height: 60,
         justifyContent: 'center',
         paddingEnd: 20,
         paddingStart: 20,

@@ -7,6 +7,9 @@ import MoodHistory from './components/MoodHistory';
 import Mood from './models/Mood';
 import Settings from './components/Settings';
 import ShowMood from './components/ShowMood';
+import AddReason from './components/AddReason';
+import Location from './models/Location';
+import Weather from './models/Weather';
 
 
 const Realm = require('realm');
@@ -34,7 +37,7 @@ class App extends Component {
   }
   componentDidMount() {
     Realm.open({
-      schema: [Mood]
+      schema: [Mood, Location, Weather]
     }).then(realm => {
       this.setState({ realm });
     });
@@ -76,12 +79,16 @@ class App extends Component {
             component={Settings}
             options={{ title: 'Settings' }}
           />
-           <Stack.Screen
+          <Stack.Screen
             name="ShowMood"
             component={ShowMood}
             options={{ title: 'Show Mood' }}
           />
-
+          <Stack.Screen
+            name="AddReason"
+            component={AddReason}
+            options={{ title: 'Add Reasons' }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
 
